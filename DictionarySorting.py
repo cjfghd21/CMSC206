@@ -5,6 +5,10 @@ import numpy as np
 import matplotlib.pyplot
 import multiprocessing as mp
 from multiprocessing import Pool
+import json
+import os
+import re
+import subprocess
 
 NUM_OF_SONGS = 200
 FIRST_SONG_ROW = 3
@@ -23,6 +27,12 @@ c = songDataClass()
 
 fullDict = dict() # dictionary using position in 200 list to index everything else, you can pull data from
 songData = dict()
+
+# find cpu threads to optimize multiprocessing
+def checkCPUcount():
+    cores = mp.cpu_count()
+    print("found " + str(cores) + " cores.\n\n" )
+    return cores
 
 
 inputCSV = pd.read_csv(file, header=None)
@@ -124,7 +134,14 @@ def log_results(result):
 
 
 def main():
-    pool = mp.Pool(processes=16)
+    # processes = cores : 33 secs, 31 secs
+    # processes = 2*cores : 33 secs
+    # processes = 3*cores : 40 secs
+    # processes = 2.5 * cores : 34 secs
+    # processes = 1.5 * cores : 36 secs
+    allowed_processes = int(checkCPUcount()/2)
+    print("using " + str(allowed_processes) + " processes")
+    pool = mp.Pool(processes=allowed_processes)
     for i in range(3, 200):
         pool.apply_async(SongDataSocket, args = (i, ), callback = log_results)
     pool.close()
@@ -138,17 +155,8 @@ if __name__ == '__main__':
     main()
     print("-------------------------------------------------------------------------\n\n"
           "-------------------------------------------------------------------------")
-    while True:
-        number = input("input")
-        try:
-            print(c.songAttributeDict[number]['name'], end=' by ')
-            print(c.songAttributeDict[number]['artist'])
-        except KeyError:
-            print("Out of range")
-            pass
-        except Exception:
-            print("Other exception occurred")
-            pass
+with open('SpotifyDataDict.txt', 'w') as f:
+    f.write(json.dumps(c.songAttributeDict))
 
 
 
