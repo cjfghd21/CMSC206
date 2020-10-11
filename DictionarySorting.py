@@ -1,31 +1,28 @@
 import spotipy
 import pandas as pd
+import csv
 import numpy as np
 import matplotlib.pyplot
 import multiprocessing as mp
 from multiprocessing import Pool
+
 NUM_OF_SONGS = 200
 FIRST_SONG_ROW = 3
 
-range1 = range(FIRST_SONG_ROW, int(NUM_OF_SONGS/4)) # first song is in row 3, but it's possible that will change
-range2 = range(int((NUM_OF_SONGS/4))+1, int(NUM_OF_SONGS/2))
-range3 = range(int((NUM_OF_SONGS/2))+1, int(((NUM_OF_SONGS/4)*3)))
-range4 = range((int((NUM_OF_SONGS/4))*3)+1, NUM_OF_SONGS)
 numbersList = list(range(3,200))
 NUM_OF_SONGS += 1  # compensate for headers (first song from spotify CSVs is listed in row 3)
 
 NUM_OF_ATTRIBUTES = 5
 URL_ROW = 4  # adjusted for columns being indexed at 1 in csv
 file = "US_Top200_10-10-2020.csv" # replace this with an input later
-class data:
+class songDataClass:
     dataPointCount = 0 # evaluate how many of the songs are actually being used as data points
     songAttributeDict = dict()
 
-c = data()
+c = songDataClass()
 
 fullDict = dict() # dictionary using position in 200 list to index everything else, you can pull data from
 songData = dict()
-fullDict = {'position': []}
 
 
 inputCSV = pd.read_csv(file, header=None)
@@ -107,8 +104,7 @@ def SongDataSocket(i):
         'key': songAnalysis['key'],
         'mode': songAnalysis['mode']
     }
-    dataReturn = [str(i-2), str(trackData)]
-
+    dataReturn = [str(i-2), dict(trackData)]
     return dataReturn
     # confidenceValues variable stores the individual confidence values in a handy list to check specifically if any of them are too low
     for k in confidenceValues:
@@ -124,16 +120,16 @@ def SongDataSocket(i):
 result_list = []
 
 def log_results(result):
-    print(result[0], end="   ")
-    print(result[1])
-    c.songAttributeDict.update({str(result[0]): str(result[1])})
+    c.songAttributeDict.update({str(result[0]): result[1]})
+
 
 def main():
-    pool = mp.Pool(6)
+    pool = mp.Pool(processes=16)
     for i in range(3, 200):
         pool.apply_async(SongDataSocket, args = (i, ), callback = log_results)
     pool.close()
     pool.join()
+
 
 def print_results():
     print(c.songAttributeDict)
@@ -142,10 +138,18 @@ if __name__ == '__main__':
     main()
     print("-------------------------------------------------------------------------\n\n"
           "-------------------------------------------------------------------------")
-    print_results()
+    while True:
+        number = input("input")
+        try:
+            print(c.songAttributeDict[number]['name'], end=' by ')
+            print(c.songAttributeDict[number]['artist'])
+        except KeyError:
+            print("Out of range")
+            pass
+        except Exception:
+            print("Other exception occurred")
+            pass
 
-
-    print(c.songAttributeDict['33'])
 
 
 
