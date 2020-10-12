@@ -25,7 +25,7 @@ def checkCPUcount():
 class songDataClass:
     dataPointCount = 0 # evaluate how many of the songs are actually being used as data points
     songAttributeDict = dict()
-    pbar = tqdm(total=200)
+
 
 
 c = songDataClass()
@@ -118,7 +118,7 @@ result_list = []
 
 def log_results(result):
     c.songAttributeDict.update({str(result[0]): result[1]})
-    c.pbar.update(1)
+    pbar.update(1)
 
 
 def main():
@@ -135,21 +135,9 @@ def print_results():
     print(c.songAttributeDict)
 
 if __name__ == '__main__':
-
+    pbar = tqdm(total=200)
     main()
     print("-------------------------------------------------------------------------\n\n"
           "-------------------------------------------------------------------------")
 with open('SpotifyDataDict.txt', 'w') as f:
     f.write(json.dumps(c.songAttributeDict))
-
-
-
-
-
-
-
-
-
-
-
-
