@@ -8,15 +8,22 @@ from multiprocessing import Pool
 import json
 from tqdm import tqdm
 
+
+username = 'epalmer822'
+CLIENT_ID = 'a79221482a5f40d286fc7b5e5c42e318'
+CLIENT_SECRET = 'a79221482a5f40d286fc7b5e5c42e318'
 NUM_OF_SONGS = 200
 FIRST_SONG_ROW = 3
+NUM_OF_ATTRIBUTES = 5
+numbersList = list(range(FIRST_SONG_ROW, NUM_OF_SONGS))
+URL_ROW = 4  # adjusted for columns being indexed at 1 in csv
 
-numbersList = list(range(3,200))
+
+
 NUM_OF_SONGS += 1  # compensate for headers (first song from spotify CSVs is listed in row 3)
 
-NUM_OF_ATTRIBUTES = 5
-URL_ROW = 4  # adjusted for columns being indexed at 1 in csv
-file = "US_Top200_10-10-2020.csv" # replace this with an input later
+
+file = "US_Top200_10-10-2020.csv" # replace this with an input later maybe?
 def checkCPUcount():
     cores = mp.cpu_count()
     processes = int(cores / 2)
@@ -31,8 +38,8 @@ class SongDataClass:
 
 c = SongDataClass()
 
-fullDict = dict() # dictionary using position in 200 list to index everything else, you can pull data from
-songData = dict()
+# fullDict = dict() # dictionary using position in 200 list to index everything else, you can pull data from
+# songData = dict()
 
 # find cpu threads to optimize multiprocessing
 
@@ -40,11 +47,8 @@ songData = dict()
 
 inputCSV = pd.read_csv(file, header=None)
 
-username = 'epalmer822'
-CLIENT_ID = 'a79221482a5f40d286fc7b5e5c42e318'
-CLIENT_SECRET = 'a79221482a5f40d286fc7b5e5c42e318'
 
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-library-read"))
+
 
 # only use if tempo_confidence > 0.5, 'time_signature_confidence' > 0.5, 'key_confidence' > 0.5,
 # and mode_confidence > 0.3
@@ -136,8 +140,9 @@ def print_results():
     print(c.songAttributeDict)
 
 
-
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-library-read"))
 if __name__ == '__main__':
+
     pbar = tqdm(total=200) # generates a progress bar
     main()
     pbar.close()  # ends the progress bar so it isn't displayed twice
