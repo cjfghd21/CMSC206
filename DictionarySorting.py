@@ -48,8 +48,6 @@ c = SongDataClass()
 inputCSV = pd.read_csv(file, header=None)
 
 
-
-
 # only use if tempo_confidence > 0.5, 'time_signature_confidence' > 0.5, 'key_confidence' > 0.5,
 # and mode_confidence > 0.3
 # we need 'duration', 'loudness', 'tempo', 'key', and 'mode'
@@ -140,7 +138,7 @@ def print_results():
     print(c.songAttributeDict)
 
 
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-library-read"))
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(username=username, scope="user-library-read", client_id=CLIENT_ID ,client_secret=CLIENT_SECRET))
 if __name__ == '__main__':
 
     pbar = tqdm(total=200) # generates a progress bar
