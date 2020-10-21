@@ -1,10 +1,12 @@
 import spotipy
+from spotipy import client as cl
+from spotipy.oauth2 import SpotifyOAuth
+from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
 import multiprocessing as mp
 from multiprocessing import Pool
 import json
 from tqdm import tqdm
-
 
 NUM_OF_SONGS = 200
 FIRST_SONG_ROW = 3
@@ -17,18 +19,17 @@ URL_ROW = 4  # adjusted for columns being indexed at 1 in csv
 file = "US_Top200_10-10-2020.csv" # replace this with an input later
 def checkCPUcount():
     cores = mp.cpu_count()
-    print("found " + str(cores) + " threads, ", end='' )
-    processes = int(cores/2)
-    print("using " + str(processes) + " processes.\n")
+    processes = int(cores / 2)
+    print("Found " + str(cores) + " threads, using " + str(processes) + " processes.\n" )
     return cores
 
-class songDataClass:
+class SongDataClass:
     dataPointCount = 0 # evaluate how many of the songs are actually being used as data points
     songAttributeDict = dict()
 
 
 
-c = songDataClass()
+c = SongDataClass()
 
 fullDict = dict() # dictionary using position in 200 list to index everything else, you can pull data from
 songData = dict()
@@ -43,10 +44,7 @@ username = 'epalmer822'
 CLIENT_ID = 'a79221482a5f40d286fc7b5e5c42e318'
 CLIENT_SECRET = 'a79221482a5f40d286fc7b5e5c42e318'
 
-token = spotipy.util.prompt_for_user_token(username)
-
-if token:
-    sp = spotipy.Spotify(auth=token)
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-library-read"))
 
 # only use if tempo_confidence > 0.5, 'time_signature_confidence' > 0.5, 'key_confidence' > 0.5,
 # and mode_confidence > 0.3
@@ -83,37 +81,36 @@ if token:
 #made a function so multiprocessing can work
 
 def SongDataSocket(i):
-    # if i % 2 == 0:
-        # print(str(int(i/2)) + "%")
-    failConfidenceTest = False  # if the confidence values are too low, we have to throw out the data, this flag will
-    # let the loop pass over that data point
-    # resetting here so at the beginning of every iteration it starts as false
-    # ---haven't done that yet---
 
-    url = inputCSV.iloc[i-1][URL_ROW]  # sets the song URL for this iteration of the loop, constant just in case spotify reformats its
+    url = inputCSV.iloc[i-1][URL_ROW]  # sets the song URL for this iteration of the loop, constant just in case spotify decides to reformat its
 
     songAnalysis = sp.audio_analysis(url)  # fetch the song attributes
-    confidenceValues = [songAnalysis['track']['tempo_confidence'],
-                        songAnalysis['track']['time_signature_confidence'],
-                        songAnalysis['track']['key_confidence'], songAnalysis['track']['mode_confidence']]
+    # confidenceValues = [songAnalysis['track']['tempo_confidence'],
+      #                   songAnalysis['track']['time_signature_confidence'],
+        #                 songAnalysis['track']['key_confidence'], songAnalysis['track']['mode_confidence']]
+
+    # may implement that if I decide on logic that i like; otherwise it'll probably just disappear in an update eventually
+
     songAnalysis = songAnalysis['track']
-    trackData = dict()
     urlData = sp.track(url)
-    trackData = {
+    trackData = \
+    {
         'name': urlData['name'],
-        'artist': urlData['album']['artists'][0]['name'],
-        # for some reason spotify indexes all artist data in a list that only has one element, which is a dictionary. no clue why
+        'artist': urlData['album']['artists'][0]['name'], # for some reason spotify indexes all artist data in a list that only has one element, which is a dictionary. no clue why
         'duration': songAnalysis['duration'],
         'loudness': songAnalysis['loudness'],
         'tempo': songAnalysis['tempo'],
         'key': songAnalysis['key'],
         'mode': songAnalysis['mode']
+        # 'extra data' : songAnalysis['extra data'] is always an option, we can use whatever data we decide we need
     }
+
     dataReturn = [str(i-2), dict(trackData)]
     return dataReturn
 
 
-# change to a string for easier input validation, can convert to an integer again later
+
+
 result_list = []
 
 def log_results(result):
@@ -123,9 +120,13 @@ def log_results(result):
 
 def main():
     allowed_processes = checkCPUcount()
-    pool = mp.Pool(processes=allowed_processes)
-    for i in range(3, 203):
-        pool.apply_async(SongDataSocket, args = (i, ), callback = log_results)
+    pool = mp.Pool(processes=allowed_processes)  # creates a multiprocessing pool to fill the dictionary file
+
+    for i in range(3, 203):                      #
+        pool.apply_async(SongDataSocket, args = (i, ), callback = log_results)  # apply_async because they're indexed
+                                                                                # by position, so what order they're
+            # callback essentially feeds the output of                          # physically stored doesn't matter, can
+            # SongDataSocket directly into log_results                          # can efficiently pull the correct data out regardless
     pool.close()
     pool.join()
     pool.close()
@@ -134,10 +135,14 @@ def main():
 def print_results():
     print(c.songAttributeDict)
 
+
+
 if __name__ == '__main__':
-    pbar = tqdm(total=200)
+    pbar = tqdm(total=200) # generates a progress bar
     main()
-    print("-------------------------------------------------------------------------\n\n"
-          "-------------------------------------------------------------------------")
-with open('SpotifyDataDict.txt', 'w') as f:
-    f.write(json.dumps(c.songAttributeDict))
+    pbar.close()  # ends the progress bar so it isn't displayed twice
+    outFileName = 'SpotifyDataDict.txt'
+    with open(outFileName, 'w') as f:  # outputs the data to the file specified above
+        f.write(json.dumps(c.songAttributeDict))
+
+
