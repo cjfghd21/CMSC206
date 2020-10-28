@@ -120,8 +120,8 @@ def log_results(result):
     pbar.update(1)
 
 
-def main():
-    allowed_processes = checkCPUcount()
+def main(allowed_processes):
+
     pool = mp.Pool(processes=allowed_processes)  # creates a multiprocessing pool to fill the dictionary file
 
     for i in range(3, 203):                      #
@@ -140,9 +140,9 @@ def print_results():
 
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(username=username, scope="user-library-read", client_id=CLIENT_ID ,client_secret=CLIENT_SECRET))
 if __name__ == '__main__':
-
+    allowed_processes = checkCPUcount()
     pbar = tqdm(total=200) # generates a progress bar
-    main()
+    main(allowed_processes)
     pbar.close()  # ends the progress bar so it isn't displayed twice
     outFileName = 'SpotifyDataDict.txt'
     with open(outFileName, 'w') as f:  # outputs the data to the file specified above
