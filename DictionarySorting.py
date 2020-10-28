@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 
 username = 'epalmer822'
-CLIENT_ID = 'a79221482a5f40d286fc7b5e5c42e318'
+CLIENT_ID = 'fc5e21deea874e2a9246c8e8935e9fe1'
 CLIENT_SECRET = 'a79221482a5f40d286fc7b5e5c42e318'
 NUM_OF_SONGS = 200
 FIRST_SONG_ROW = 3
@@ -138,7 +138,6 @@ def print_results():
     print(c.songAttributeDict)
 
 
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(username=username, scope="user-library-read", client_id=CLIENT_ID, client_secret=CLIENT_SECRET))
 if __name__ == '__main__':
     allowed_processes = checkCPUcount()
     pbar = tqdm(total=200) # generates a progress bar
