@@ -137,7 +137,7 @@ def main(allowed_processes):
 def print_results():
     print(c.songAttributeDict)
 
-
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(username=username, scope="user-library-read", client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri="https://spotify.com"))
 if __name__ == '__main__':
     allowed_processes = checkCPUcount()
     pbar = tqdm(total=200) # generates a progress bar
