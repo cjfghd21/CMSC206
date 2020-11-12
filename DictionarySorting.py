@@ -2,10 +2,12 @@ import spotipy
 from spotipy import client as cl
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.oauth2 import SpotifyClientCredentials
+
+import json
 import pandas as pd
 import multiprocessing as mp
 from multiprocessing import Pool
-import json
+
 from tqdm import tqdm
 
 
