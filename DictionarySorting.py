@@ -136,7 +136,7 @@ if __name__ == '__main__':
     outFileName = "SpotifyDataDict.txt"
     try:
         open(outFileName, 'r')
-        DataUsable = json.loads(outFileName)
+        DataUsable = json.loads(outFileName)  # checks to see if file exists, if it does, will just use existing data. If not, will
     except FileNotFoundError:
         allowed_processes = checkCPUcount()
         pbar = tqdm(total=200)  # generates a progress bar
