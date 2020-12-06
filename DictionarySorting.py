@@ -40,19 +40,9 @@ class SongDataClass:
 
 c = SongDataClass()
 
-# fullDict = dict() # dictionary using position in 200 list to index everything else, you can pull data from
-# songData = dict()
-
-# find cpu threads to optimize multiprocessing
-
-
 
 inputCSV = pd.read_csv(file, header=None)
 
-
-# only use if tempo_confidence > 0.5, 'time_signature_confidence' > 0.5, 'key_confidence' > 0.5,
-# and mode_confidence > 0.3
-# we need 'duration', 'loudness', 'tempo', 'key', and 'mode'
 # each song data list will contain, in order, ['name'], ['artist], ['duration'], ['loudness'], ['tempo'], ['key'], and ['mode']
 # indexed with the number of the position in top 200
 
@@ -126,11 +116,12 @@ def main(allowed_processes):
 
     pool = mp.Pool(processes=allowed_processes)  # creates a multiprocessing pool to fill the dictionary file
 
-    for i in range(3, 203):                      #
-        pool.apply_async(SongDataSocket, args = (i, ), callback = log_results)  # apply_async because they're indexed
+    for i in range(3, 203):
+        pool.apply_async(SongDataSocket, args = (i,), callback = log_results)  # apply_async because they're indexed
                                                                                 # by position, so what order they're
             # callback essentially feeds the output of                          # physically stored doesn't matter, can
             # SongDataSocket directly into log_results                          # can efficiently pull the correct data out regardless
+
     pool.close()
     pool.join()
     pool.close()
@@ -139,17 +130,22 @@ def main(allowed_processes):
 def print_results():
     print(c.songAttributeDict)
 
+
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(username=username, scope="user-library-read", client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri="https://spotify.com"))
 if __name__ == '__main__':
-    allowed_processes = checkCPUcount()
-    pbar = tqdm(total=200) # generates a progress bar
-    main(allowed_processes)
-    pbar.close()  # ends the progress bar so it isn't displayed twice
-    outFileName = 'SpotifyDataDict.txt'
-    with open(outFileName, 'w') as f:  # outputs the data to the file specified above
-        f.write(json.dumps(c.songAttributeDict))
+    outFileName = "SpotifyDataDict.txt"
+    try:
+        open(outFileName, 'r')
+        DataUsable = json.loads(outFileName)
+    except FileNotFoundError:
+        allowed_processes = checkCPUcount()
+        pbar = tqdm(total=200)  # generates a progress bar
+        main(allowed_processes)
+        pbar.close()  # ends the progress bar so it isn't displayed twice
+        with open(outFileName, 'w') as f:  # outputs the data to the file specified above
+            f.write(json.dumps(c.songAttributeDict))
+            DataUsable = json.dumps(c.songAttributeDict)
 
 
-        cl.
 
 
