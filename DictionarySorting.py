@@ -25,7 +25,10 @@ URL_ROW = 4  # adjusted for columns being indexed at 1 in csv
 NUM_OF_SONGS += 1  # compensate for headers (first song from spotify CSVs is listed in row 3)
 
 
-file = "US_Top200_10-10-2020.csv" # replace this with an input later maybe?
+file = requests.get("https://spotifycharts.com/regional/us/weekly/latest/download", headers={'User-Agent': 'Mozilla/5.0'})    #we can replace 28 and 44 with this. Gets csv file directly from spotify.chart website.
+filedata = StringIO(file.text)                 # requests and StringIO required to bypass  error:  urllib2.HTTPError: HTTP Error 403: Forbidden
+inputCSV = pd.read_csv(filedata)
+
 def checkCPUcount():
     cores = mp.cpu_count()
     processes = int(cores / 2)
@@ -41,7 +44,7 @@ class SongDataClass:
 c = SongDataClass()
 
 
-inputCSV = pd.read_csv(file, header=None)
+
 
 # each song data list will contain, in order, ['name'], ['artist], ['duration'], ['loudness'], ['tempo'], ['key'], and ['mode']
 # indexed with the number of the position in top 200
